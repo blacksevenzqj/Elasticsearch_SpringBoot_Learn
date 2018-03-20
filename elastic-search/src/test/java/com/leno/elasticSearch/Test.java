@@ -22,6 +22,13 @@ public class Test {
 //        match();
 //        get();
         search();
+
+        close();
+    }
+
+    public static void close() throws Exception{
+        RestHighLevelClient restHighLevelClient = ESClientFactory.getHighLevelClient();
+        restHighLevelClient.close();
     }
 
     public static void index(){

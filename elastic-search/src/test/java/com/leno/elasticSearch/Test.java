@@ -21,7 +21,8 @@ public class Test {
 //        index();
 //        match();
 //        get();
-        search();
+//        search();
+        search2();
 
         close();
     }
@@ -35,8 +36,11 @@ public class Test {
         RestHighLevelClient restHighLevelClient = ESClientFactory.getHighLevelClient();
         IndexRequest indexRequest = new IndexRequest("seven", "five");
         News news = new News();
-        news.setTitle("da feiji");
-        news.setTag("feiji");
+//        news.setTitle("da feiji");
+//        news.setTag("feiji");
+//        news.setPublishTime("2018-01-24T23:59:30Z");
+        news.setTitle("中国产小型无人机的“对手”来了，俄微型拦截导弹便宜量又多");
+        news.setTag("军事");
         news.setPublishTime("2018-01-24T23:59:30Z");
         String source = JSON.toJSONString(news);
         indexRequest.source(source, XContentType.JSON);
@@ -56,19 +60,44 @@ public class Test {
 
     public static void search() throws Exception {
         RestHighLevelClient restHighLevelClient = ESClientFactory.getHighLevelClient();
-
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         sourceBuilder.query(QueryBuilders.termQuery("title", "feiji"));
         sourceBuilder.from(0);
         sourceBuilder.size(5);
         sourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
-
         SearchRequest request = new SearchRequest("seven");
         request.types("five");
         request.source(sourceBuilder);
-
         SearchResponse rep = restHighLevelClient.search(request);
         System.out.println(rep.toString());
+    }
+
+    public static void search2() throws Exception {
+        RestHighLevelClient restHighLevelClient = ESClientFactory.getHighLevelClient();
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        sourceBuilder.from(0);
+        sourceBuilder.size(10);
+        sourceBuilder.fetchSource(new String[]{"title"}, new String[]{});
+        MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("title", "中国");
+        TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery("tag", "军事");
+        RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery("publishTime");
+        rangeQueryBuilder.gte("2018-01-21T08:00:00Z");
+        rangeQueryBuilder.lte("2018-01-26T20:00:00Z");
+        BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
+        boolBuilder.must(matchQueryBuilder);
+        boolBuilder.must(termQueryBuilder);
+        boolBuilder.must(rangeQueryBuilder);
+        sourceBuilder.query(boolBuilder);
+        SearchRequest searchRequest = new SearchRequest("seven");
+        searchRequest.types("five");
+        searchRequest.source(sourceBuilder);
+        try {
+            SearchResponse response = restHighLevelClient.search(searchRequest);
+            System.out.println(response);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public static void match(){

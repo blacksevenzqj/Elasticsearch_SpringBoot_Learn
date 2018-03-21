@@ -1,6 +1,7 @@
 package com.leno.elasticSearch;
 
 import com.alibaba.fastjson.JSON;
+import lombok.Data;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.settings.Settings;
@@ -10,16 +11,17 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Test2 {
+public class TestMapping {
 
     public static void main(String[] args) throws Exception{
-//        createIndex();
-//
-//
-//
-//        close();
+        createIndex();
 
-       System.out.println(School.class.getAnnotation(MyTypeAbc.class));
+
+        close();
+
+        School school = new School();
+        System.out.println(school.getClass().getAnnotation(MyTypeAbc.class).typeName());
+        System.out.println(School.class.getAnnotation(MyTypeAbc.class).typeName());
 
         Field[] fields = School.class.getDeclaredFields();
         for(Field field : fields){
@@ -37,7 +39,7 @@ public class Test2 {
     public static void createIndex(){
         RestHighLevelClient restHighLevelClient = ESClientFactory.getHighLevelClient();
 
-        CreateIndexRequest request = new CreateIndexRequest("xiamo");
+        CreateIndexRequest request = new CreateIndexRequest(School.class.getAnnotation(MyTypeAbc.class).indexName());
         request.settings(Settings.builder()
                 .put("index.number_of_shards", 3)
                 .put("index.number_of_replicas", 1));
@@ -55,18 +57,24 @@ public class Test2 {
 //                XContentType.JSON);
 
 
+        Map mapType = new HashMap();
         Map map3 = new HashMap();
-        map3.put("type","text");
+        map3.put(ElConfig.EL_TYPE, ElConfig.El_STRING);
         Map map4 = new HashMap();
-        map4.put("type","integer");
+        map4.put(ElConfig.EL_TYPE, ElConfig.El_INTEGER);
+        Map map5 = new HashMap();
+        map5.put(ElConfig.EL_TYPE, ElConfig.El_DOUBLE);
+        mapType.put(ElConfig.El_STRING, map3);
+        mapType.put(ElConfig.El_INTEGER, map4);
+        mapType.put(ElConfig.El_DOUBLE, map5);
 
         Map map2 = new HashMap();
         Field[] fields = School.class.getDeclaredFields();
         for(Field field : fields){
             if(field.getType() == int.class || field.getType() == Integer.class){
-                map2.put(field.getName(), map4);
+                map2.put(field.getName(), mapType.get(ElConfig.El_INTEGER));
             }else if(field.getType() == String.class){
-                map2.put(field.getName(), map3);
+                map2.put(field.getName(), mapType.get(ElConfig.El_STRING));
             }
             System.out.println(field.getName());
         }

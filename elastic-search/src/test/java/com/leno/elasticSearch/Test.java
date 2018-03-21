@@ -36,12 +36,12 @@ public class Test {
         RestHighLevelClient restHighLevelClient = ESClientFactory.getHighLevelClient();
         IndexRequest indexRequest = new IndexRequest("seven", "five");
         News news = new News();
-//        news.setTitle("da feiji");
-//        news.setTag("feiji");
-//        news.setPublishTime("2018-01-24T23:59:30Z");
-        news.setTitle("中国产小型无人机的“对手”来了，俄微型拦截导弹便宜量又多");
-        news.setTag("军事");
+        news.setTitle("da feiji");
+        news.setTag("feiji");
         news.setPublishTime("2018-01-24T23:59:30Z");
+//        news.setTitle("中国产小型无人机的“对手”来了，俄微型拦截导弹便宜量又多");
+//        news.setTag("军事");
+//        news.setPublishTime("2018-01-24T23:59:30Z");
         String source = JSON.toJSONString(news);
         indexRequest.source(source, XContentType.JSON);
         try {
@@ -78,8 +78,8 @@ public class Test {
         sourceBuilder.from(0);
         sourceBuilder.size(10);
         sourceBuilder.fetchSource(new String[]{"title"}, new String[]{});
-        MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("title", "中国");
-        TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery("tag", "军事");
+        MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("title", "da feiji");
+        TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery("tag", "feiji");
         RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery("publishTime");
         rangeQueryBuilder.gte("2018-01-21T08:00:00Z");
         rangeQueryBuilder.lte("2018-01-26T20:00:00Z");
@@ -94,8 +94,7 @@ public class Test {
         try {
             SearchResponse response = restHighLevelClient.search(searchRequest);
             System.out.println(response);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

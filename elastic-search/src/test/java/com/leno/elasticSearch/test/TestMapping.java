@@ -1,12 +1,15 @@
-package com.leno.elasticSearch;
+package com.leno.elasticSearch.test;
 
-import com.alibaba.fastjson.JSON;
-import lombok.Data;
+import com.leno.elasticSearch.ESClientFactory;
+import com.leno.elasticSearch.ElConfig;
+import com.leno.elasticSearch.School;
+import com.leno.elasticSearch.annotation.MyFieldType;
+import com.leno.elasticSearch.annotation.MyType;
+import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.XContentType;
-
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,35 +17,19 @@ import java.util.Map;
 public class TestMapping {
 
     public static void main(String[] args) throws Exception{
-        createIndex();
-
+        createIndexMapping();
 
         close();
 
-        School school = new School();
-        System.out.println(school.getClass().getAnnotation(MyTypeAbc.class).typeName());
-        System.out.println(School.class.getAnnotation(MyTypeAbc.class).typeName());
-
-        Field[] fields = School.class.getDeclaredFields();
-        for(Field field : fields){
-            if(field.getType() == int.class || field.getType() == Integer.class){
-                System.out.println(field.getType());
-            }else if(field.getType() == String.class){
-                System.out.println(field.getName());
-            }
-        }
-
-        System.out.println(int.class == Integer.class);
-
     }
 
-    public static void createIndex(){
+    public static void createIndexMapping(){
         RestHighLevelClient restHighLevelClient = ESClientFactory.getHighLevelClient();
 
-        CreateIndexRequest request = new CreateIndexRequest(School.class.getAnnotation(MyTypeAbc.class).indexName());
+        CreateIndexRequest request = new CreateIndexRequest(School.class.getAnnotation(MyType.class).indexName());
         request.settings(Settings.builder()
-                .put("index.number_of_shards", 3)
-                .put("index.number_of_replicas", 1));
+                .put(ElConfig.NUMBER_OF_SHARDS, 3)
+                .put(ElConfig.NUMBER_OF_REPLICAS, 1));
 
 //        request.mapping("school",
 //                         "{\n" +
@@ -64,45 +51,47 @@ public class TestMapping {
         map4.put(ElConfig.EL_TYPE, ElConfig.El_INTEGER);
         Map map5 = new HashMap();
         map5.put(ElConfig.EL_TYPE, ElConfig.El_DOUBLE);
+        Map map6 = new HashMap();
+        map6.put(ElConfig.EL_TYPE, ElConfig.EL_BOOLEAN);
+        Map map7 = new HashMap();
+        map7.put(ElConfig.EL_TYPE, ElConfig.EL_DATE);
+        Map map8 = new HashMap();
+        map8.put(ElConfig.EL_TYPE, ElConfig.El_KEYWORD);
+        Map map9= new HashMap();
+        map9.put(ElConfig.EL_TYPE, ElConfig.El_LONG);
+
         mapType.put(ElConfig.El_STRING, map3);
         mapType.put(ElConfig.El_INTEGER, map4);
         mapType.put(ElConfig.El_DOUBLE, map5);
+        mapType.put(ElConfig.EL_BOOLEAN, map6);
+        mapType.put(ElConfig.EL_DATE, map7);
+        mapType.put(ElConfig.El_KEYWORD, map8);
+        mapType.put(ElConfig.El_LONG, map9);
 
         Map map2 = new HashMap();
         Field[] fields = School.class.getDeclaredFields();
-        for(Field field : fields){
-            if(field.getType() == int.class || field.getType() == Integer.class){
-                map2.put(field.getName(), mapType.get(ElConfig.El_INTEGER));
-            }else if(field.getType() == String.class){
+        for(Field field : fields) {
+            if (field.getAnnotation(MyFieldType.class) == null || StringUtils.isBlank(field.getAnnotation(MyFieldType.class).typeName())) {
                 map2.put(field.getName(), mapType.get(ElConfig.El_STRING));
+            } else {
+                map2.put(field.getName(), mapType.get(field.getAnnotation(MyFieldType.class).typeName()));
             }
-            System.out.println(field.getName());
         }
 
         Map map1 = new HashMap();
-        map1.put("properties", map2);
+        map1.put(ElConfig.PROPERTIES, map2);
 
         Map map = new HashMap();
-        map.put(School.class.getAnnotation(MyTypeAbc.class).typeName(), map1);
-        request.mapping(School.class.getAnnotation(MyTypeAbc.class).typeName(), map);
+        map.put(School.class.getAnnotation(MyType.class).typeName(), map1);
+        request.mapping(School.class.getAnnotation(MyType.class).typeName(), map);
+
         try {
-            restHighLevelClient.indices().create(request);
+            CreateIndexResponse createIndexResponse = restHighLevelClient.indices().create(request);
         }catch (Exception e){
             e.printStackTrace();
         }
 
     }
-
-
-
-
-
-
-
-
-
-
-
 
 
     public static void close() throws Exception{

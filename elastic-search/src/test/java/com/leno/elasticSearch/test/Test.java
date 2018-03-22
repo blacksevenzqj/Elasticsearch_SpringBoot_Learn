@@ -1,6 +1,7 @@
-package com.leno.elasticSearch;
+package com.leno.elasticSearch.test;
 
 import com.alibaba.fastjson.JSON;
+import com.leno.elasticSearch.ESClientFactory;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -35,15 +36,15 @@ public class Test {
     public static void index(){
         RestHighLevelClient restHighLevelClient = ESClientFactory.getHighLevelClient();
         IndexRequest indexRequest = new IndexRequest("seven", "five");
-        News news = new News();
-        news.setTitle("da feiji");
-        news.setTag("feiji");
-        news.setPublishTime("2018-01-24T23:59:30Z");
+//        News news = new News();
+//        news.setTitle("da feiji");
+//        news.setTag("feiji");
+//        news.setPublishTime("2018-01-24T23:59:30Z");
 //        news.setTitle("中国产小型无人机的“对手”来了，俄微型拦截导弹便宜量又多");
 //        news.setTag("军事");
 //        news.setPublishTime("2018-01-24T23:59:30Z");
-        String source = JSON.toJSONString(news);
-        indexRequest.source(source, XContentType.JSON);
+//        String source = JSON.toJSONString(news);
+//        indexRequest.source(source, XContentType.JSON);
         try {
             restHighLevelClient.index(indexRequest);
         } catch (IOException e) {
